@@ -1,18 +1,36 @@
 import { useState } from "react";
-import { createGame, makeMove } from "./tic-tac-toe";
+import { createGame, getWinner, makeMove } from "./tic-tac-toe";
 
 function App() {
-  let [gameState, setGameState] = useState(getInitialGame())
+  const [gameState, setGameState] = useState(getInitialGame());
 
   // TODO: display the gameState, and call `makeMove` when a player clicks a button
-  return <div>Hello World! current player: {gameState.currentPlayer}</div>;
+  return (
+    <>
+      <div>current player: {gameState.currentPlayer}</div>
+      {getWinner(gameState) && <div>winner: {getWinner(gameState)}</div>}
+      <div>
+        {[0, 1, 2].map((row) => (
+          <div key={row} style={{ display: "flex", gap: 4 }}>
+            {[0, 1, 2].map((col) => (
+              <button
+                key={col}
+                style={{ flex: 0.1, aspectRatio: "1" }}
+                onClick={() => setGameState(makeMove(gameState, row * 3 + col))}
+              >
+                {gameState.board[row * 3 + col]}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+      <button onClick={() => setGameState(getInitialGame())}>reset game</button>
+    </>
+  );
 }
 
 function getInitialGame() {
-  let initialGameState = createGame()
-  initialGameState = makeMove(initialGameState, 3)
-  initialGameState = makeMove(initialGameState, 0)
-  return initialGameState
+  return createGame();
 }
 
 export default App;

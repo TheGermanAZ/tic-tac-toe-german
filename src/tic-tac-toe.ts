@@ -33,13 +33,19 @@ export function makeMove(state: GameState, position: number): GameState {
   if (state.board[position] !== null) {
     throw new Error("Position is already occupied");
   }
-  if (getWinner(state) !== null) {
+  const winner = getWinner(state);
+  if (winner !== null) {
     throw new Error("Game is already over");
   }
 
   const newState: GameState = { ...state, board: [...state.board] };
   newState.board[position] = state.currentPlayer;
-  newState.currentPlayer = state.currentPlayer === "X" ? "O" : "X";
+
+  if (state.currentPlayer === "X") {
+    newState.currentPlayer = "O";
+  } else {
+    newState.currentPlayer = "X";
+  }
   return newState;
 }
 
@@ -102,3 +108,14 @@ export function getWinner(state: GameState): Player | null {
   }
   return null;
 }
+
+const WINNING_LINES: [number, number, number][] = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
+];
