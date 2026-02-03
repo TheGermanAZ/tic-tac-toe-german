@@ -24,9 +24,81 @@ export function createGame(): GameState {
 }
 
 export function makeMove(state: GameState, position: number): GameState {
-  return state
+  if (!Number.isInteger(position)) {
+    throw new Error("Position must be an integer");
+  }
+  if (position < 0 || position > 8) {
+    throw new Error("Position must be between 0 and 8");
+  }
+  if (state.board[position] !== null) {
+    throw new Error("Position is already occupied");
+  }
+  if (getWinner(state) !== null) {
+    throw new Error("Game is already over");
+  }
+
+  const newState: GameState = { ...state, board: [...state.board] };
+  newState.board[position] = state.currentPlayer;
+  newState.currentPlayer = state.currentPlayer === "X" ? "O" : "X";
+  return newState;
 }
 
 export function getWinner(state: GameState): Player | null {
+  if (
+    state.board[0] === state.board[1] &&
+    state.board[1] === state.board[2] &&
+    state.board[0] !== null
+  ) {
+    return state.board[0];
+  }
+  if (
+    state.board[3] === state.board[4] &&
+    state.board[4] === state.board[5] &&
+    state.board[3] !== null
+  ) {
+    return state.board[3];
+  }
+  if (
+    state.board[6] === state.board[7] &&
+    state.board[7] === state.board[8] &&
+    state.board[6] !== null
+  ) {
+    return state.board[6];
+  }
+  if (
+    state.board[0] === state.board[3] &&
+    state.board[3] === state.board[6] &&
+    state.board[0] !== null
+  ) {
+    return state.board[0];
+  }
+  if (
+    state.board[1] === state.board[4] &&
+    state.board[4] === state.board[7] &&
+    state.board[1] !== null
+  ) {
+    return state.board[1];
+  }
+  if (
+    state.board[2] === state.board[5] &&
+    state.board[5] === state.board[8] &&
+    state.board[2] !== null
+  ) {
+    return state.board[2];
+  }
+  if (
+    state.board[0] === state.board[4] &&
+    state.board[4] === state.board[8] &&
+    state.board[0] !== null
+  ) {
+    return state.board[0];
+  }
+  if (
+    state.board[2] === state.board[4] &&
+    state.board[4] === state.board[6] &&
+    state.board[2] !== null
+  ) {
+    return state.board[2];
+  }
   return null;
 }
