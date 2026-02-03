@@ -11,7 +11,10 @@ function App() {
       {getWinner(gameState) && <div>winner: {getWinner(gameState)}</div>}
       <div>
         {[0, 1, 2].map((row) => (
-          <div key={row} style={{ display: "flex", gap: 4 }}>
+          <div
+            key={row}
+            style={{ display: "flex", gap: 4, justifyContent: "center" }}
+          >
             {[0, 1, 2].map((col) => (
               <button
                 key={col}
