@@ -119,3 +119,13 @@ const WINNING_LINES: [number, number, number][] = [
   [0, 4, 8],
   [2, 4, 6],
 ];
+
+export function altWinner(state: GameState): Player | null {
+  for (const [a, b, c] of WINNING_LINES) {
+    const cell = state.board[a];
+    if (cell !== null && cell === state.board[b] && cell === state.board[c]) {
+      return cell;
+    }
+  }
+  return null;
+}
