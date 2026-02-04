@@ -5,21 +5,22 @@ import { type GameState, type Player } from "./server/tic-tac-toe";
 
 function App() {
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const previousWinnerRef = useRef<Player>(undefined);
+  const previousWinnerRef = useRef<Player>(null);
 
   useEffect(() => {
     const getGameState = async () => {
       try {
         const response = await fetch("/game");
 
+        const data = await response.json();
+
         if (!response.ok) {
-          console.error("error fetching game state");
+          console.error("error fetching game state", data.error);
         }
 
-        setGameState(await response.json());
+        setGameState(data);
       } catch (error) {
-        const reason = { cause: error };
-        console.error("couldnt get the game state", reason);
+        console.error("couldnt get the game state", { cause: error });
       }
     };
     getGameState();
@@ -36,7 +37,7 @@ function App() {
         origin: { y: 0.6 },
       });
     }
-    previousWinnerRef.current = winner;
+    previousWinnerRef.current = winner ?? null;
   }, [gameState]);
 
   if (gameState === null) return <div>loading</div>;
@@ -48,14 +49,15 @@ function App() {
         headers: { "Content-Type": "application/json" },
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
         console.error("error fetching reset method");
       }
 
-      setGameState(await response.json());
+      setGameState(data);
     } catch (error) {
-      const reason = { cause: error };
-      console.error("couldnt reset game", reason);
+      console.error("couldnt reset game", { cause: error });
     }
   };
 
@@ -67,14 +69,16 @@ function App() {
         body: JSON.stringify({ position }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        console.error("failed to post new game state");
+        console.error("Move failed:", data.error);
+        return;
       }
 
-      setGameState(await response.json());
+      setGameState(data);
     } catch (error) {
-      const reason = { cause: error };
-      console.error("couldnt change game state", reason);
+      console.error("couldnt change game state", { cause: error });
     }
   };
 
