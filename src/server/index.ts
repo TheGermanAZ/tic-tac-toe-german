@@ -14,8 +14,13 @@ app.get("/game", (_, res) => {
 
 app.post("/move", (req, res) => {
   const { position } = req.body;
-  game = makeMove(game, position);
-  res.json(game);
+  try {
+    game = makeMove(game, position);
+    res.json(game);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    res.status(400).json({ ...game, error: message });
+  }
 });
 
 app.post("/reset", (_, res) => {
