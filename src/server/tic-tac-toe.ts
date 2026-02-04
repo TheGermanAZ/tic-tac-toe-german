@@ -14,6 +14,7 @@ export type Board = [Cell, Cell, Cell, Cell, Cell, Cell, Cell, Cell, Cell];
 export type GameState = {
   board: Board;
   currentPlayer: Player;
+  winner?: Player;
 };
 
 export function createGame(): GameState {
@@ -34,19 +35,24 @@ export function makeMove(state: GameState, position: number): GameState {
     throw new Error("Position is already occupied");
   }
 
-  const winner = getWinner(state);
+  const newState: GameState = { ...state, board: [...state.board] };
 
-  if (winner !== null) {
+  newState.board[position] = state.currentPlayer;
+
+  if (newState.winner) {
     throw new Error("Game is already over");
   }
-
-  const newState: GameState = { ...state, board: [...state.board] };
-  newState.board[position] = state.currentPlayer;
 
   if (newState.currentPlayer === "X") {
     newState.currentPlayer = "O";
   } else {
     newState.currentPlayer = "X";
+  }
+
+  const winner = getWinner(newState);
+
+  if (winner !== null) {
+    newState.winner = winner;
   }
   return newState;
 }
