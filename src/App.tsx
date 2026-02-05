@@ -36,6 +36,7 @@ function App() {
     const { id, ...gameState } = data;
 
     setGames({ ...games, [id]: gameState });
+    setSelectedGameId(id);
   };
 
   const setGameId = (id: string) => {
@@ -44,28 +45,47 @@ function App() {
 
   if (selectedGameId === null) {
     return (
-      <>
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-4">
+        <h1 className="text-2xl font-bold">Tic Tac Toe Games</h1>
         <button
           onClick={() => addGameHandler()}
-          className="flex flex-col items-center justify-center gap-1"
+          className="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all duration-200 rounded"
         >
-          create game
+          Create New Game
         </button>
-        {Object.keys(games).map((id) => {
-          return (
-            <button key={id} onClick={() => setGameId(id)}>
-              <GameBoard id={id} />
-            </button>
-          );
-        })}
-      </>
+        <div className="flex flex-col gap-4 w-full max-w-2xl">
+          {Object.keys(games).length === 0 ? (
+            <p className="text-gray-500 text-center">No games yet. Create one to get started!</p>
+          ) : (
+            Object.keys(games).map((id) => (
+              <div
+                key={id}
+                className="relative border border-gray-300 bg-white hover:border-gray-400 hover:shadow-md transition-all duration-200 rounded p-4"
+              >
+                <div
+                  onClick={() => setGameId(id)}
+                  className="absolute inset-0 cursor-pointer z-10"
+                />
+                <div className="pointer-events-none">
+                  <GameBoard id={id} />
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     );
   } else {
     return (
-      <>
-        <button onClick={() => setSelectedGameId(null)}>Back to games</button>
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-4">
+        <button
+          onClick={() => setSelectedGameId(null)}
+          className="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all duration-200 rounded self-start"
+        >
+          ← Back to games
+        </button>
         <GameBoard id={selectedGameId} />
-      </>
+      </div>
     );
   }
 }
