@@ -14,16 +14,27 @@ app.use(express.json());
 const games = new Map<string, GameState>();
 const gameConnections = new Map<string, Set<WebSocket>>();
 
-app.post("/games", (_req, res) => {
-  const gameId = crypto.randomUUID();
-  const newGame = createGame();
-  games.set(gameId, newGame);
-  res.json({ ...newGame, id: gameId });
-});
-
-app.get("/games", (_req, res) => {
+app.ws("/games", (ws) => {
   const gamesObject = Object.fromEntries(games);
-  res.json(gamesObject);
+  ws.send(JSON.stringify({ type: "games_list", game: gamesObject }));
+
+  ws.on("message", (message: string) => {
+    const data = JSON.parse(message);
+    const type = data.type;
+
+    if (type === "create") {
+      const gameId = crypto.randomUUID();
+      const newGame = createGame();
+      games.set(gameId, newGame);
+      ws.send(
+        JSON.stringify({ type: "game_created", id: gameId, game: newGame })
+      );
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("leaving lobby");
+  });
 });
 
 app.ws("/games/:id", (ws, req) => {
