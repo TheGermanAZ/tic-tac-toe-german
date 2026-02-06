@@ -7,6 +7,7 @@ function GameBoard({ id }: { id: string }) {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const previousWinnerRef = useRef<Player>(null);
   const wsRef = useRef<WebSocket>(null);
+  const isFirstUpdate = useRef(true);
 
   useEffect(() => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -41,10 +42,17 @@ function GameBoard({ id }: { id: string }) {
   }, [id]);
 
   useEffect(() => {
-    const winner = gameState?.winner;
-    // Trigger confetti when a winner appears (was null, now has a winner)
+    if (gameState === null) return;
+
+    const winner = gameState.winner;
+
+    if (isFirstUpdate.current) {
+      isFirstUpdate.current = false;
+      previousWinnerRef.current = winner ?? null;
+      return;
+    }
+
     if (winner && previousWinnerRef.current === null) {
-      // Confetti explosion from center
       confetti({
         particleCount: 100,
         spread: 70,
