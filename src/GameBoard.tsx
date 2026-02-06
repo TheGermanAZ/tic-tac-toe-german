@@ -10,7 +10,9 @@ function GameBoard({ id }: { id: string }) {
 
   useEffect(() => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const ws = new WebSocket(`${protocol}://${window.location.host}/games/${id}`);
+    const ws = new WebSocket(
+      `${protocol}://${window.location.host}/games/${id}`
+    );
     wsRef.current = ws;
 
     ws.onmessage = (event) => {
@@ -51,6 +53,10 @@ function GameBoard({ id }: { id: string }) {
     }
     previousWinnerRef.current = winner ?? null;
   }, [gameState]);
+
+  useEffect(() => {
+    return () => confetti.reset();
+  }, []);
 
   if (gameState === null) return <div>loading</div>;
 
