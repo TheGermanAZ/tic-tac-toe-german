@@ -20,7 +20,7 @@ function App() {
       }
 
       if (data.type === "games_list") {
-        setGames(data.game);
+        setGames(data.games);
       }
 
       if (data.type === "game_created") {

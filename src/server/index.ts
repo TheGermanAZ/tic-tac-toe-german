@@ -16,7 +16,7 @@ const gameConnections = new Map<string, Set<WebSocket>>();
 
 app.ws("/games", (ws) => {
   const gamesObject = Object.fromEntries(games);
-  ws.send(JSON.stringify({ type: "games_list", game: gamesObject }));
+  ws.send(JSON.stringify({ type: "games_list", games: gamesObject }));
 
   ws.on("message", (message: string) => {
     const data = JSON.parse(message);
