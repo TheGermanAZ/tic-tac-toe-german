@@ -7,6 +7,7 @@ import type { WebSocket } from "ws";
 const expressApp = express();
 const wsInstance = expressWs(expressApp);
 export const app = wsInstance.app;
+const port = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
 
@@ -86,7 +87,7 @@ app.ws("/games/:id", (ws, req) => {
 
 // Only start server if this file is run directly, not when imported for tests
 if (import.meta.main) {
-  ViteExpress.listen(app as unknown as express.Express, 3000, () => {
+  ViteExpress.listen(app as unknown as express.Express, port, () => {
     console.log("Server listening at http://localhost:3000");
   });
 }
