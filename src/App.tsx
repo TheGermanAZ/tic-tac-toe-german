@@ -1,41 +1,50 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { GameState } from "./server/tic-tac-toe";
 import GameBoard from "./GameBoard";
 
 function App() {
   const [games, setGames] = useState<Record<string, GameState>>({});
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const wsRef = useRef<WebSocket>(null);
 
   useEffect(() => {
-    const getGames = async () => {
-      const response = await fetch("/games");
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const ws = new WebSocket(`${protocol}://${window.location.host}/games`);
+    wsRef.current = ws;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("could not fetch initial game data");
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.error) {
+        console.error("Server error:", data.error);
+        return;
       }
-      setGames(data);
+
+      if (data.type === "games_list") {
+        setGames(data.game);
+      }
+
+      if (data.type === "game_created") {
+        setGames((prev) => ({ ...prev, [data.id]: data.game }));
+      }
     };
 
-    getGames();
+    ws.onerror = (error) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        console.error("Websocket error:", error);
+      }
+    };
+
+    ws.onclose = (event) => {
+      console.log("WebSocket closed:", event.code, event.reason);
+    };
+
+    return () => {
+      ws.close();
+    };
   }, []);
 
-  const addGameHandler = async () => {
-    const response = await fetch("/games", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("could not create new game");
-    }
-
-    const { id, ...gameState } = data;
-
-    setGames({ ...games, [id]: gameState });
+  const addGameHandler = () => {
+    wsRef.current?.send(JSON.stringify({ type: "create" }));
   };
 
   const setGameId = (id: string) => {

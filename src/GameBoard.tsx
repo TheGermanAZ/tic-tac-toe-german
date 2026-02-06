@@ -5,7 +5,7 @@ import { type GameState, type Player } from "./server/tic-tac-toe";
 
 function GameBoard({ id }: { id: string }) {
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const previousWinnerRef = useRef<Player | undefined>(undefined);
+  const previousWinnerRef = useRef<Player | undefined | null>(undefined);
   const wsRef = useRef<WebSocket>(null);
 
   useEffect(() => {
@@ -43,16 +43,20 @@ function GameBoard({ id }: { id: string }) {
   useEffect(() => {
     if (gameState === null) return;
 
-    const winner = gameState.winner ?? null;
+    const winner = gameState.winner;
 
-    if (previousWinnerRef.current !== undefined && winner && previousWinnerRef.current === null) {
+    if (
+      previousWinnerRef.current !== undefined &&
+      winner &&
+      previousWinnerRef.current === null
+    ) {
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
       });
     }
-    previousWinnerRef.current = winner;
+    previousWinnerRef.current = winner ?? null;
 
     return () => confetti.reset();
   }, [gameState]);
