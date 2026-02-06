@@ -5,9 +5,8 @@ import { type GameState, type Player } from "./server/tic-tac-toe";
 
 function GameBoard({ id }: { id: string }) {
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const previousWinnerRef = useRef<Player>(null);
+  const previousWinnerRef = useRef<Player | undefined>(undefined);
   const wsRef = useRef<WebSocket>(null);
-  const isFirstUpdate = useRef(true);
 
   useEffect(() => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -44,39 +43,29 @@ function GameBoard({ id }: { id: string }) {
   useEffect(() => {
     if (gameState === null) return;
 
-    const winner = gameState.winner;
+    const winner = gameState.winner ?? null;
 
-    if (isFirstUpdate.current) {
-      isFirstUpdate.current = false;
-      previousWinnerRef.current = winner ?? null;
-      return;
-    }
-
-    if (winner && previousWinnerRef.current === null) {
+    if (previousWinnerRef.current !== undefined && winner && previousWinnerRef.current === null) {
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
       });
     }
-    previousWinnerRef.current = winner ?? null;
-  }, [gameState]);
+    previousWinnerRef.current = winner;
 
-  useEffect(() => {
     return () => confetti.reset();
-  }, []);
+  }, [gameState]);
 
   if (gameState === null) return <div>loading</div>;
 
-  const resetHandler = async () => {
+  const resetHandler = () => {
     wsRef.current?.send(JSON.stringify({ type: "reset" }));
   };
 
-  const moveHandler = async (position: number) => {
+  const moveHandler = (position: number) => {
     wsRef.current?.send(JSON.stringify({ type: "move", position }));
   };
-
-  // TODO: display the gameState, and call `makeMove` when a player clicks a button
   return (
     <div className="flex flex-col items-center justify-center gap-1">
       <div>Tic Tac Toe</div>
