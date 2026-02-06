@@ -9,7 +9,8 @@ function GameBoard({ id }: { id: string }) {
   const wsRef = useRef<WebSocket>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://${window.location.host}/games/${id}`);
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const ws = new WebSocket(`${protocol}://${window.location.host}/games/${id}`);
     wsRef.current = ws;
 
     ws.onmessage = (event) => {
