@@ -36,7 +36,6 @@ function App() {
     const { id, ...gameState } = data;
 
     setGames({ ...games, [id]: gameState });
-    setSelectedGameId(id);
   };
 
   const setGameId = (id: string) => {
@@ -55,7 +54,9 @@ function App() {
         </button>
         <div className="flex flex-col gap-4 w-full max-w-2xl">
           {Object.keys(games).length === 0 ? (
-            <p className="text-gray-500 text-center">No games yet. Create one to get started!</p>
+            <p className="text-gray-500 text-center">
+              No games yet. Create one to get started!
+            </p>
           ) : (
             Object.keys(games).map((id) => (
               <div

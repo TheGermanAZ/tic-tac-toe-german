@@ -6,24 +6,35 @@ import { type GameState, type Player } from "./server/tic-tac-toe";
 function GameBoard({ id }: { id: string }) {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const previousWinnerRef = useRef<Player>(null);
+  const wsRef = useRef<WebSocket>(null);
 
   useEffect(() => {
-    const getGameState = async () => {
-      try {
-        const response = await fetch(`/games/${id}`);
+    const ws = new WebSocket(`ws://${window.location.host}/games/${id}`);
+    wsRef.current = ws;
 
-        const data = await response.json();
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.error) {
+        console.error("Server error:", data.error);
+        return;
+      }
 
-        if (!response.ok) {
-          console.error("error fetching game state", data.error);
-        }
+      setGameState(data);
+    };
 
-        setGameState(data);
-      } catch (error) {
-        console.error("couldnt get the game state", { cause: error });
+    ws.onerror = (error) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        console.error("Websocket error:", error);
       }
     };
-    getGameState();
+
+    ws.onclose = (event) => {
+      console.log("WebSocket closed:", event.code, event.reason);
+    };
+
+    return () => {
+      ws.close();
+    };
   }, [id]);
 
   useEffect(() => {
@@ -43,43 +54,11 @@ function GameBoard({ id }: { id: string }) {
   if (gameState === null) return <div>loading</div>;
 
   const resetHandler = async () => {
-    try {
-      const response = await fetch(`/games/${id}/reset`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("error fetching reset method");
-      }
-
-      setGameState(data);
-    } catch (error) {
-      console.error("couldnt reset game", { cause: error });
-    }
+    wsRef.current?.send(JSON.stringify({ type: "reset" }));
   };
 
   const moveHandler = async (position: number) => {
-    try {
-      const response = await fetch(`/games/${id}/move`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ position }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Move failed:", data.error);
-        return;
-      }
-
-      setGameState(data);
-    } catch (error) {
-      console.error("couldnt change game state", { cause: error });
-    }
+    wsRef.current?.send(JSON.stringify({ type: "move", position }));
   };
 
   // TODO: display the gameState, and call `makeMove` when a player clicks a button
