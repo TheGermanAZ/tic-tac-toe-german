@@ -6,13 +6,6 @@ function makeBoard(board: Board, currentPlayer: "X" | "O" = "X"): GameState {
   return { board, currentPlayer };
 }
 
-function playMoves(...positions: number[]): GameState {
-  let state = createGame();
-  for (const pos of positions) {
-    state = makeMove(state, pos);
-  }
-  return state;
-}
 
 describe("getBestMove", () => {
   it("returns a valid position (0-8) on empty board", () => {
