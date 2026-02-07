@@ -57,8 +57,6 @@ function GameBoard({ id }: { id: string }) {
       });
     }
     previousWinnerRef.current = winner ?? null;
-
-    return () => confetti.reset();
   }, [gameState]);
 
   if (gameState === null) return <div>loading</div>;
