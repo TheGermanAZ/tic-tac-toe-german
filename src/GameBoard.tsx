@@ -3,8 +3,13 @@ import confetti from "canvas-confetti";
 
 import { type GameState, type Player } from "./server/tic-tac-toe";
 
+type GameMessage = GameState & {
+  id: string;
+  ratingChange?: { X?: number; O?: number };
+};
+
 function GameBoard({ id }: { id: string }) {
-  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [gameState, setGameState] = useState<GameMessage | null>(null);
   const previousWinnerRef = useRef<Player | undefined | null>(undefined);
   const wsRef = useRef<WebSocket>(null);
 
@@ -59,6 +64,24 @@ function GameBoard({ id }: { id: string }) {
     previousWinnerRef.current = winner ?? null;
   }, [gameState]);
 
+  useEffect(() => {
+    return () => confetti.reset();
+  }, []);
+
+  useEffect(() => {
+    if (!gameState) return;
+    if (!gameState.isAI) return;
+    if (gameState.winner) return;
+    if (gameState.board.every((c) => c !== null)) return;
+    if (gameState.currentPlayer !== "O") return;
+
+    const timer = setTimeout(() => {
+      wsRef.current?.send(JSON.stringify({ type: "ai_move" }));
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [gameState]);
+
   if (gameState === null) return <div>loading</div>;
 
   const resetHandler = () => {
@@ -68,11 +91,36 @@ function GameBoard({ id }: { id: string }) {
   const moveHandler = (position: number) => {
     wsRef.current?.send(JSON.stringify({ type: "move", position }));
   };
+
+  const xPlayer = gameState.players?.X ?? "Player X";
+  const oPlayer = gameState.players?.O ?? "Player O";
+
   return (
     <div className="flex flex-col items-center justify-center gap-1">
-      <div>Tic Tac Toe</div>
-      <div>current player: {gameState.currentPlayer}</div>
-      {gameState.winner && <div>winner: {gameState.winner}</div>}
+      <div className="text-lg font-semibold">
+        {xPlayer} vs {oPlayer}
+      </div>
+      <div>current player: {gameState.currentPlayer === "X" ? xPlayer : oPlayer}</div>
+      {gameState.winner && (
+        <div className="flex flex-col items-center gap-1">
+          <div className="font-bold">
+            Winner: {gameState.winner === "X" ? xPlayer : oPlayer}
+          </div>
+          {gameState.ratingChange && (
+            <div className="text-sm text-gray-500">
+              <span className={gameState.ratingChange.X && gameState.ratingChange.X > 0 ? "text-green-600" : "text-red-600"}>
+                {xPlayer}: {gameState.ratingChange.X && gameState.ratingChange.X > 0 ? "+" : ""}
+                {gameState.ratingChange.X}
+              </span>
+              {" / "}
+              <span className={gameState.ratingChange.O && gameState.ratingChange.O > 0 ? "text-green-600" : "text-red-600"}>
+                {oPlayer}: {gameState.ratingChange.O && gameState.ratingChange.O > 0 ? "+" : ""}
+                {gameState.ratingChange.O}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
       <div className="w-[200px] flex flex-col gap-1">
         {[0, 1, 2].map((row) => (
           <div key={row} className="flex gap-1">

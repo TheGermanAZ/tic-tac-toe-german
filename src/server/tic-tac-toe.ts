@@ -11,10 +11,15 @@ export type Cell = Player | null;
 //  6 | 7 | 8
 export type Board = [Cell, Cell, Cell, Cell, Cell, Cell, Cell, Cell, Cell];
 
+export type Difficulty = "easy" | "medium" | "hard" | "expert" | "impossible";
+
 export type GameState = {
   board: Board;
   currentPlayer: Player;
   winner?: Player;
+  players?: { X?: string; O?: string };
+  isAI?: boolean;
+  difficulty?: Difficulty;
 };
 
 export function createGame(): GameState {
@@ -133,6 +138,10 @@ const WINNING_LINES: [number, number, number][] = [
   [0, 4, 8],
   [2, 4, 6],
 ];
+
+export function isBoardFull(state: GameState): boolean {
+  return state.board.every((cell) => cell !== null);
+}
 
 export function altWinner(state: GameState): Player | null {
   for (const [a, b, c] of WINNING_LINES) {
