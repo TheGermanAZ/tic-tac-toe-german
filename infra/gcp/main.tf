@@ -84,6 +84,12 @@ resource "google_compute_instance" "app" {
     systemctl enable docker
     systemctl start docker
     usermod -aG docker $(whoami)
+
+    # Install Docker Buildx plugin
+    mkdir -p /usr/local/lib/docker/cli-plugins
+    curl -SL "https://github.com/docker/buildx/releases/latest/download/buildx-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64" \
+      -o /usr/local/lib/docker/cli-plugins/docker-buildx
+    chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
   EOF
 
   metadata = {
