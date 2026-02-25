@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-lgtm:4318
+    restart: unless-stopped
+    depends_on:
+      otel-lgtm:
+        condition: service_healthy
+
+  otel-lgtm:
+    image: grafana/otel-lgtm:0.19.0
+    ports:
+      - "3001:3000" # Grafana UI
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    restart: unless-stopped

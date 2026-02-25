@@ -1,3 +1,5 @@
+// Must be first import — OTel patches modules on load, so it needs to run before express/ws are imported
+import "./tracing";
 import { createGame, makeMove, type GameState } from "./tic-tac-toe";
 import {
   createPlayerRating,
