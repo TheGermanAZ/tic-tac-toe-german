@@ -79,17 +79,22 @@ resource "google_compute_instance" "app" {
 
   metadata_startup_script = <<-EOF
     #!/bin/bash
+    set -euo pipefail
+
+    # Install prerequisites and add Docker's official GPG key + repo
     apt-get update -y
-    apt-get install -y docker.io docker-compose-v2 git
+    apt-get install -y ca-certificates curl git
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+    chmod a+r /etc/apt/keyrings/docker.asc
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+
+    # Install Docker Engine, Compose, and Buildx from official repo
+    apt-get update -y
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin docker-buildx-plugin
     systemctl enable docker
     systemctl start docker
     usermod -aG docker $(whoami)
-
-    # Install Docker Buildx plugin
-    mkdir -p /usr/local/lib/docker/cli-plugins
-    curl -SL "https://github.com/docker/buildx/releases/latest/download/buildx-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64" \
-      -o /usr/local/lib/docker/cli-plugins/docker-buildx
-    chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
   EOF
 
   metadata = {
