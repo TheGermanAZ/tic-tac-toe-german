@@ -90,7 +90,7 @@ resource "aws_security_group" "tic_tac_toe" {
 
 resource "aws_instance" "app" {
   ami                    = data.aws_ami.al2023.id
-  instance_type          = "t3.micro"
+  instance_type          = "t3.small"
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.tic_tac_toe.id]
 
@@ -102,11 +102,14 @@ resource "aws_instance" "app" {
     systemctl start docker
     usermod -aG docker ec2-user
 
-    # Install Docker Compose plugin
+    # Install Docker Compose and Buildx plugins
     mkdir -p /usr/local/lib/docker/cli-plugins
     curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64" \
       -o /usr/local/lib/docker/cli-plugins/docker-compose
     chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+    curl -SL "https://github.com/docker/buildx/releases/download/v0.21.2/buildx-v0.21.2.linux-amd64" \
+      -o /usr/local/lib/docker/cli-plugins/docker-buildx
+    chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
   EOF
 
   tags = {
