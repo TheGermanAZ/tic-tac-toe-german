@@ -18,4 +18,9 @@ services:
       - "3001:3000" # Grafana UI
       - "4317:4317" # OTLP gRPC
       - "4318:4318" # OTLP HTTP
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     restart: unless-stopped
